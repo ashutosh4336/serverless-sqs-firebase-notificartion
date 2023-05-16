@@ -44,41 +44,45 @@ const isJSON = (item) => {
 };
 
 module.exports.sendNotification = async (event) => {
-  console.log('Invoked Function...!');
+  try {
+    console.log('Invoked Function...!');
 
-  const dynamoTableName = process.env.DYNAMODB_TABLE;
+    const dynamoTableName = process.env.DYNAMODB_TABLE;
 
-  const records = event.Records;
-  const allMessage = [];
+    const records = event.Records;
+    const allMessage = [];
 
-  for (const record of records) {
-    const {
-      messageId,
-      messageAttributes,
-      attributes,
-      body: messageBody,
-    } = record;
+    for (const record of records) {
+      const {
+        messageId,
+        messageAttributes,
+        attributes,
+        body: messageBody,
+      } = record;
 
-    allMessage.push(messageBody);
+      allMessage.push(messageBody);
 
-    await putItemToDynamoDB(dynamoTableName, {
-      id: { S: messageId },
-      messageBody: { S: messageBody },
-      messageAttributes: {
-        S: isJSON(messageAttributes)
-          ? JSON.stringify(messageAttributes)
-          : messageAttributes,
-      },
-      attributes: {
-        S: isJSON(attributes) ? JSON.stringify(attributes) : attributes,
-      },
-      createdAt: { S: new Date().toISOString() },
-      updatedAt: { S: new Date().toISOString() },
-    });
+      await putItemToDynamoDB(dynamoTableName, {
+        id: { S: messageId },
+        messageBody: { S: messageBody },
+        messageAttributes: {
+          S: isJSON(messageAttributes)
+            ? JSON.stringify(messageAttributes)
+            : messageAttributes,
+        },
+        attributes: {
+          S: isJSON(attributes) ? JSON.stringify(attributes) : attributes,
+        },
+        createdAt: { S: new Date().toISOString() },
+        updatedAt: { S: new Date().toISOString() },
+      });
 
-    // :Todo: Send Notification Here
-    // firebase.sendNotification('', {}, {});
+      // :Todo: Send Notification Here
+      // firebase.sendNotification('', {}, {});
+    }
+
+    // return allMessage;
+  } catch (err) {
+    console.log('Error Happened', err);
   }
-
-  return allMessage;
 };
